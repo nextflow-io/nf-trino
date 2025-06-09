@@ -10,8 +10,7 @@ nextflowPlugin {
     provider = 'nextflow'
     className = 'nextflow.plugin.NfTrinoPlugin'
     extensionPoints = [
-        'nextflow.plugin.NfTrinoExtension',
-        'nextflow.plugin.NfTrinoFactory'
+        'nextflow.sql.ChannelSqlExtension'
     ]
 
     publishing {
@@ -20,4 +19,9 @@ nextflowPlugin {
             authToken = project.findProperty('pluginRegistry.accessToken')
         }
     }
+}
+
+dependencies {
+    api("org.apache.groovy:groovy-sql:4.0.26") { transitive = false }
+    api("io.nextflow:nf-sqldb:0.7.0") { transitive = false }
 }
