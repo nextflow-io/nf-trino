@@ -18,6 +18,7 @@ package nextflow.plugin
 
 import groovy.transform.CompileStatic
 import nextflow.plugin.BasePlugin
+import nextflow.sql.config.DriverRegistry
 import org.pf4j.PluginWrapper
 
 /**
@@ -28,5 +29,7 @@ class NfTrinoPlugin extends BasePlugin {
 
     NfTrinoPlugin(PluginWrapper wrapper) {
         super(wrapper)
+        // add the AWS Athena driver 
+        DriverRegistry.DEFAULT.addDriver("awsathena", "com.simba.athena.jdbc.Driver")
     }
 }

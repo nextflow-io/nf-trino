@@ -1,11 +1,22 @@
 # nf-trino plugin
 
+This plugin provides support for Trino and AWS Athena SQL databases in Nextflow workflows.
+
+## Features
+
+- **AWS Athena Integration**: Query AWS Athena databases directly from Nextflow workflows
+- **SQL Channel Extension**: Leverage the `nf-sqldb` channel extensions for seamless data integration
+
 ## Building
 
 To build the plugin:
 ```bash
 make assemble
 ```
+
+## Usage
+
+See the [AWS Athena documentation](docs/aws-athena.md) for detailed usage instructions.
 
 ## Testing with Nextflow
 
