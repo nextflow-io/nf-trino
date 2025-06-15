@@ -4,6 +4,7 @@ This plugin provides support for Trino and AWS Athena SQL databases in Nextflow 
 
 ## Features
 
+- **Trino Integration**: Query Trino databases directly from Nextflow workflows using the official Trino JDBC driver
 - **AWS Athena Integration**: Query AWS Athena databases directly from Nextflow workflows
 - **SQL Channel Extension**: Leverage the `nf-sqldb` channel extensions for seamless data integration
 
@@ -15,6 +16,30 @@ make assemble
 ```
 
 ## Usage
+
+### Trino Connection
+
+Connect to a Trino cluster using JDBC URL format:
+
+```groovy
+// Connect to Trino
+def sql = sql {
+    url = "jdbc:trino://example.net:8080/catalog/schema"
+    driver = "trino"
+    user = "your-username"
+    // Optional parameters
+    // password = "your-password"  // for LDAP authentication
+    // SSL = "true"               // for secure connections
+    // accessToken = "jwt-token"  // for JWT authentication
+}
+
+// Query data
+channel.fromQuery("SELECT * FROM your_table", sql: sql)
+```
+
+See the [Trino documentation](https://trino.io/docs/current/client/jdbc.html) for detailed connection parameters and authentication options.
+
+### AWS Athena Connection
 
 See the [AWS Athena documentation](docs/aws-athena.md) for detailed usage instructions.
 

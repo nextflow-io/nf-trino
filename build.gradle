@@ -28,6 +28,9 @@ dependencies {
     // JDBC driver setup for AWS Athena - the 3rd party JAR are being downloaded and setup as gradle tasks below.
     // Reference https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html
     api files('src/dist/lib/AthenaJDBC42_2.0.25.1001.jar')
+    // Trino JDBC driver - downloaded and setup as gradle tasks below
+    // Reference https://trino.io/docs/current/client/jdbc.html
+    api files('src/dist/lib/trino-jdbc-476.jar')
 }
 
 /**
@@ -59,4 +62,21 @@ task copyAthenDep(dependsOn: unzipAthenDep, type: Copy) {
     from file(new File(buildDir, '/downloads/unzip/awsathena/SimbaAthenaJDBC-2.0.25.1001/AthenaJDBC42_2.0.25.1001.jar'))
     into "src/dist/lib"
 }
-project.compileGroovy.dependsOn('copyAthenDep')
+
+/**
+ * Trino JDBC Driver
+ * The following tasks download the Trino JDBC driver from Maven Central
+ * Reference: https://trino.io/docs/current/client/jdbc.html
+ */
+task downloadTrinoDep(type: Download) {
+    src 'https://repo1.maven.org/maven2/io/trino/trino-jdbc/476/trino-jdbc-476.jar'
+    dest new File(buildDir, 'downloads/trino-jdbc-476.jar')
+    overwrite false
+}
+
+task copyTrinoDep(dependsOn: downloadTrinoDep, type: Copy) {
+    from file(new File(buildDir, 'downloads/trino-jdbc-476.jar'))
+    into "src/dist/lib"
+}
+
+project.compileGroovy.dependsOn('copyAthenDep', 'copyTrinoDep')

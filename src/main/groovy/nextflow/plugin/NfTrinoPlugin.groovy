@@ -31,5 +31,7 @@ class NfTrinoPlugin extends BasePlugin {
         super(wrapper)
         // add the AWS Athena driver 
         DriverRegistry.DEFAULT.addDriver("awsathena", "com.simba.athena.jdbc.Driver")
+        // add the Trino JDBC driver
+        DriverRegistry.DEFAULT.addDriver("trino", "io.trino.jdbc.TrinoDriver")
     }
 }

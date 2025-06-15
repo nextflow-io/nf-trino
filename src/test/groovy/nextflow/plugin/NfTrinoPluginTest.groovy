@@ -40,6 +40,18 @@ class NfTrinoPluginTest extends Specification {
         DriverRegistry.DEFAULT.getDrivers()["awsathena"] == "com.simba.athena.jdbc.Driver"
     }
 
+    def 'should register Trino driver' () {
+        given:
+        def wrapper = Mock(PluginWrapper)
+        
+        when:
+        new NfTrinoPlugin(wrapper)
+        
+        then:
+        DriverRegistry.DEFAULT.getDrivers().containsKey("trino")
+        DriverRegistry.DEFAULT.getDrivers()["trino"] == "io.trino.jdbc.TrinoDriver"
+    }
+
     @Requires({ 
         // Check if AWS credentials are available
         System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
