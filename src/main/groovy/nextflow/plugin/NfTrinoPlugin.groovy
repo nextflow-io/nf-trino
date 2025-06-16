@@ -33,5 +33,7 @@ class NfTrinoPlugin extends BasePlugin {
         DriverRegistry.DEFAULT.addDriver("awsathena", "com.simba.athena.jdbc.Driver")
         // add the Trino JDBC driver
         DriverRegistry.DEFAULT.addDriver("trino", "io.trino.jdbc.TrinoDriver")
+        // add the Starburst driver (uses the same Trino JDBC driver)
+        DriverRegistry.DEFAULT.addDriver("starburst", "io.trino.jdbc.TrinoDriver")
     }
 }

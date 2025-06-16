@@ -1,10 +1,11 @@
 # nf-trino plugin
 
-This plugin provides support for Trino and AWS Athena SQL databases in Nextflow workflows.
+This plugin provides support for Trino, Starburst, and AWS Athena SQL databases in Nextflow workflows.
 
 ## Features
 
 - **Trino Integration**: Query Trino databases directly from Nextflow workflows using the official Trino JDBC driver
+- **Starburst Integration**: Query Starburst Galaxy and Starburst Enterprise platforms using the same Trino JDBC driver
 - **AWS Athena Integration**: Query AWS Athena databases directly from Nextflow workflows
 - **SQL Channel Extension**: Leverage the `nf-sqldb` channel extensions for seamless data integration
 
@@ -38,6 +39,29 @@ channel.fromQuery("SELECT * FROM your_table", sql: sql)
 ```
 
 See the [Trino documentation](https://trino.io/docs/current/client/jdbc.html) for detailed connection parameters and authentication options.
+
+### Starburst Connection
+
+Connect to Starburst Galaxy or Starburst Enterprise:
+
+```groovy
+// Connect to Starburst Galaxy (fully managed cloud)
+def sql = sql {
+    url = "jdbc:trino://your-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
+    driver = "starburst"
+    user = "your-username"
+    password = "your-password"
+}
+
+// Connect to Starburst Enterprise (self-managed)
+def sql = sql {
+    url = "jdbc:trino://your-starburst-host:8080/catalog/schema"
+    driver = "starburst"
+    user = "your-username"
+}
+```
+
+See the [Starburst documentation](docs/starburst.md) for detailed usage instructions and authentication options.
 
 ### AWS Athena Connection
 

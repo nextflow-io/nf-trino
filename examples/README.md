@@ -91,11 +91,46 @@ sql {
 }
 ```
 
+### Starburst Configuration
+
+For Starburst Galaxy (fully managed cloud):
+
+```groovy
+sql {
+    db {
+        starburst {
+            url = 'jdbc:trino://your-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true'
+            driver = 'starburst'
+            user = 'your-username'
+            password = 'your-password'
+        }
+    }
+}
+```
+
+For Starburst Enterprise (self-managed):
+
+```groovy
+sql {
+    db {
+        starburst {
+            url = 'jdbc:trino://your-starburst-host:8080/catalog/schema'
+            driver = 'starburst'
+            user = 'your-username'
+            // Add SSL for secure connections
+            // url = 'jdbc:trino://your-starburst-host:443/catalog/schema?SSL=true'
+            // password = 'your-password'  // if using LDAP authentication
+        }
+    }
+}
+```
+
 ## Supported Drivers
 
 The nf-trino plugin registers the following JDBC drivers:
 
 - **trino**: `io.trino.jdbc.TrinoDriver` - For Trino clusters
+- **starburst**: `io.trino.jdbc.TrinoDriver` - For Starburst Galaxy and Starburst Enterprise
 - **awsathena**: `com.simba.athena.jdbc.Driver` - For AWS Athena
 
 ## Troubleshooting
@@ -108,5 +143,6 @@ The nf-trino plugin registers the following JDBC drivers:
 ## More Information
 
 - [Trino JDBC Documentation](https://trino.io/docs/current/client/jdbc.html)
+- [Starburst JDBC Documentation](https://docs.starburst.io/clients/jdbc.html)
 - [AWS Athena JDBC Documentation](https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html)
 - [NIH SRA on AWS](https://www.ncbi.nlm.nih.gov/sra/docs/sra-aws-download/) 

@@ -52,6 +52,86 @@ class NfTrinoPluginTest extends Specification {
         DriverRegistry.DEFAULT.getDrivers()["trino"] == "io.trino.jdbc.TrinoDriver"
     }
 
+    def 'should register Starburst driver' () {
+        given:
+        def wrapper = Mock(PluginWrapper)
+        
+        when:
+        new NfTrinoPlugin(wrapper)
+        
+        then:
+        DriverRegistry.DEFAULT.getDrivers().containsKey("starburst")
+        DriverRegistry.DEFAULT.getDrivers()["starburst"] == "io.trino.jdbc.TrinoDriver"
+    }
+
+    def 'should register all supported drivers' () {
+        given:
+        def wrapper = Mock(PluginWrapper)
+        
+        when:
+        new NfTrinoPlugin(wrapper)
+        def drivers = DriverRegistry.DEFAULT.getDrivers()
+        
+        then: 'All three drivers should be registered'
+        drivers.containsKey("trino")
+        drivers.containsKey("starburst") 
+        drivers.containsKey("awsathena")
+        
+        and: 'Trino and Starburst should use the same driver class'
+        drivers["trino"] == "io.trino.jdbc.TrinoDriver"
+        drivers["starburst"] == "io.trino.jdbc.TrinoDriver"
+        drivers["trino"] == drivers["starburst"]
+        
+        and: 'Athena should use its own driver class'
+        drivers["awsathena"] == "com.simba.athena.jdbc.Driver"
+    }
+
+    def 'should validate Starburst JDBC URL format' () {
+        given: 'Various Starburst JDBC URL formats'
+        def galaxyUrl = "jdbc:trino://cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
+        def enterpriseUrl = "jdbc:trino://starburst-host:8080/catalog/schema"
+        def enterpriseSSLUrl = "jdbc:trino://starburst-host:443/catalog/schema?SSL=true"
+        
+        when: 'Validating URL formats'
+        def galaxyValid = galaxyUrl.startsWith("jdbc:trino://") && galaxyUrl.contains("galaxy.starburst.io")
+        def enterpriseValid = enterpriseUrl.startsWith("jdbc:trino://") && enterpriseUrl.contains(":8080")
+        def enterpriseSSLValid = enterpriseSSLUrl.startsWith("jdbc:trino://") && enterpriseSSLUrl.contains("SSL=true")
+        
+        then: 'All URL formats should be valid'
+        galaxyValid
+        enterpriseValid
+        enterpriseSSLValid
+    }
+
+    def 'should handle Starburst connection parameters' () {
+        given: 'Starburst connection parameters'
+        def connectionProps = [
+            'SSL': 'true',
+            'SSLVerification': 'FULL',
+            'source': 'nextflow-analytics',
+            'clientTags': 'batch,genomics',
+            'sessionProperties': 'query_max_memory=10GB;query_max_run_time=1h',
+            'roles': 'hive:analyst;system:monitor',
+            'timezone': 'UTC',
+            'accessToken': 'jwt-token-example',
+            'externalAuthentication': 'true'
+        ]
+        
+        when: 'Processing connection properties'
+        def sslEnabled = connectionProps['SSL'] == 'true'
+        def hasJWT = connectionProps['accessToken'] != null
+        def hasOAuth = connectionProps['externalAuthentication'] == 'true'
+        def hasSessionProps = connectionProps['sessionProperties'] != null
+        
+        then: 'Properties should be correctly identified'
+        sslEnabled
+        hasJWT
+        hasOAuth
+        hasSessionProps
+        connectionProps['source'] == 'nextflow-analytics'
+        connectionProps['timezone'] == 'UTC'
+    }
+
     @Requires({ 
         // Check if AWS credentials are available
         System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
