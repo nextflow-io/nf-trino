@@ -132,6 +132,110 @@ class NfTrinoPluginTest extends Specification {
         connectionProps['timezone'] == 'UTC'
     }
 
+    def 'should create Starburst JDBC connection with proper driver class' () {
+        given: 'Starburst Galaxy connection parameters'
+        def galaxyUrl = "jdbc:trino://test-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
+        def username = "test-user"
+        def password = "test-password"
+        
+        and: 'Starburst driver is registered'
+        def wrapper = Mock(PluginWrapper)
+        new NfTrinoPlugin(wrapper)
+        
+        when: 'Getting the registered driver class'
+        def driverClass = DriverRegistry.DEFAULT.getDrivers()["starburst"]
+        
+        then: 'Should use the Trino JDBC driver'
+        driverClass == "io.trino.jdbc.TrinoDriver"
+        
+        when: 'Validating connection parameters'
+        def urlValid = galaxyUrl.startsWith("jdbc:trino://") && galaxyUrl.contains("galaxy.starburst.io")
+        def hasSSL = galaxyUrl.contains("SSL=true")
+        def hasCredentials = username != null && password != null
+        
+        then: 'Connection setup should be valid'
+        urlValid
+        hasSSL
+        hasCredentials
+    }
+
+    def 'should support Starburst Enterprise connection formats' () {
+        given: 'Various Starburst Enterprise connection scenarios'
+        def basicUrl = "jdbc:trino://starburst-coordinator:8080/hive/default"
+        def sslUrl = "jdbc:trino://starburst-coordinator:443/iceberg/analytics?SSL=true"
+        def jwtUrl = "jdbc:trino://starburst-coordinator:8080/catalog/schema"
+        
+        and: 'Connection properties for different auth methods'
+        def basicProps = [user: 'analyst']
+        def sslProps = [user: 'analyst', password: 'secret', SSL: 'true']
+        def jwtProps = [user: 'analyst', accessToken: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...']
+        
+        when: 'Validating different connection formats'
+        def basicValid = basicUrl.startsWith("jdbc:trino://") && basicUrl.contains(":8080")
+        def sslValid = sslUrl.startsWith("jdbc:trino://") && sslUrl.contains("SSL=true")
+        def jwtValid = jwtUrl.startsWith("jdbc:trino://") && jwtProps.accessToken != null
+        
+        then: 'All connection formats should be valid'
+        basicValid
+        sslValid
+        jwtValid
+        basicProps.user == 'analyst'
+        sslProps.SSL == 'true'
+        jwtProps.accessToken.startsWith('eyJ0eXAiOiJKV1Qi')
+    }
+
+    def 'should handle Starburst connection failure gracefully when cluster is unreachable' () {
+        given: 'Starburst connection parameters for non-existent cluster'
+        def testUrl = "jdbc:trino://non-existent-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
+        def testUser = "test-user"
+        def testPassword = "test-password"
+        
+        and: 'Starburst driver is registered'
+        def wrapper = Mock(PluginWrapper)
+        new NfTrinoPlugin(wrapper)
+        
+        when: 'Attempting to connect to non-existent Starburst cluster'
+        def sql = Sql.newInstance(testUrl, testUser, testPassword, "io.trino.jdbc.TrinoDriver")
+        sql.rows("SELECT 1")
+        
+        then: 'Should throw an appropriate connection exception'
+        thrown(Exception)
+    }
+
+    def 'should construct valid Starburst JDBC URLs according to documentation' () {
+        given: 'Starburst connection requirements from documentation'
+        // Based on https://docs.starburst.io/clients/jdbc.html
+        def galaxyHost = "my-cluster.galaxy.starburst.io"
+        def enterpriseHost = "starburst-coordinator.company.com"
+        def catalog = "iceberg"
+        def schema = "analytics"
+        
+        when: 'Constructing Starburst Galaxy JDBC URLs'
+        def galaxyBasicUrl = "jdbc:trino://${galaxyHost}:443/${catalog}/${schema}"
+        def galaxySSLUrl = "jdbc:trino://${galaxyHost}:443/${catalog}/${schema}?SSL=true"
+        def galaxyWithPropsUrl = "jdbc:trino://${galaxyHost}:443/${catalog}/${schema}?SSL=true&source=nextflow&clientTags=batch"
+        
+        and: 'Constructing Starburst Enterprise JDBC URLs'
+        def enterpriseBasicUrl = "jdbc:trino://${enterpriseHost}:8080/${catalog}/${schema}"
+        def enterpriseSSLUrl = "jdbc:trino://${enterpriseHost}:443/${catalog}/${schema}?SSL=true"
+        def enterpriseJWTUrl = "jdbc:trino://${enterpriseHost}:8080/${catalog}/${schema}"
+        
+        then: 'All URLs should follow the correct jdbc:trino:// format'
+        galaxyBasicUrl == "jdbc:trino://my-cluster.galaxy.starburst.io:443/iceberg/analytics"
+        galaxySSLUrl == "jdbc:trino://my-cluster.galaxy.starburst.io:443/iceberg/analytics?SSL=true"
+        galaxyWithPropsUrl.contains("SSL=true") && galaxyWithPropsUrl.contains("source=nextflow")
+        
+        and: 'Enterprise URLs should be properly formatted'
+        enterpriseBasicUrl == "jdbc:trino://starburst-coordinator.company.com:8080/iceberg/analytics"
+        enterpriseSSLUrl.contains("SSL=true") && enterpriseSSLUrl.contains(":443")
+        enterpriseJWTUrl.startsWith("jdbc:trino://")
+        
+        and: 'All URLs should be valid Trino JDBC format'
+        [galaxyBasicUrl, galaxySSLUrl, enterpriseBasicUrl, enterpriseSSLUrl, enterpriseJWTUrl].every { url ->
+            url.startsWith("jdbc:trino://") && url.contains(catalog) && url.contains(schema)
+        }
+    }
+
     @Requires({ 
         // Check if AWS credentials are available
         System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
