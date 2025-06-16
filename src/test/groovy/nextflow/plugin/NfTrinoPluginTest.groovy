@@ -22,12 +22,14 @@ import org.pf4j.PluginWrapper
 import spock.lang.Specification
 import spock.lang.Ignore
 import spock.lang.Requires
+import spock.lang.Tag
 
 /**
  * Test for NfTrinoPlugin
  */
 class NfTrinoPluginTest extends Specification {
 
+    @Tag("Athena")
     def 'should register AWS Athena driver' () {
         given:
         def wrapper = Mock(PluginWrapper)
@@ -40,6 +42,7 @@ class NfTrinoPluginTest extends Specification {
         DriverRegistry.DEFAULT.getDrivers()["awsathena"] == "com.simba.athena.jdbc.Driver"
     }
 
+    @Tag("Trino")
     def 'should register Trino driver' () {
         given:
         def wrapper = Mock(PluginWrapper)
@@ -52,6 +55,7 @@ class NfTrinoPluginTest extends Specification {
         DriverRegistry.DEFAULT.getDrivers()["trino"] == "io.trino.jdbc.TrinoDriver"
     }
 
+    @Tag("Starburst")
     def 'should register Starburst driver' () {
         given:
         def wrapper = Mock(PluginWrapper)
@@ -64,6 +68,9 @@ class NfTrinoPluginTest extends Specification {
         DriverRegistry.DEFAULT.getDrivers()["starburst"] == "io.trino.jdbc.TrinoDriver"
     }
 
+    @Tag("Trino")
+    @Tag("Starburst") 
+    @Tag("Athena")
     def 'should register all supported drivers' () {
         given:
         def wrapper = Mock(PluginWrapper)
@@ -86,6 +93,7 @@ class NfTrinoPluginTest extends Specification {
         drivers["awsathena"] == "com.simba.athena.jdbc.Driver"
     }
 
+    @Tag("Starburst")
     def 'should validate Starburst JDBC URL format' () {
         given: 'Various Starburst JDBC URL formats'
         def galaxyUrl = "jdbc:trino://cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
@@ -103,6 +111,7 @@ class NfTrinoPluginTest extends Specification {
         enterpriseSSLValid
     }
 
+    @Tag("Starburst")
     def 'should handle Starburst connection parameters' () {
         given: 'Starburst connection parameters'
         def connectionProps = [
@@ -132,6 +141,7 @@ class NfTrinoPluginTest extends Specification {
         connectionProps['timezone'] == 'UTC'
     }
 
+    @Tag("Starburst")
     def 'should create Starburst JDBC connection with proper driver class' () {
         given: 'Starburst Galaxy connection parameters'
         def galaxyUrl = "jdbc:trino://test-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
@@ -159,6 +169,7 @@ class NfTrinoPluginTest extends Specification {
         hasCredentials
     }
 
+    @Tag("Starburst")
     def 'should support Starburst Enterprise connection formats' () {
         given: 'Various Starburst Enterprise connection scenarios'
         def basicUrl = "jdbc:trino://starburst-coordinator:8080/hive/default"
@@ -184,6 +195,7 @@ class NfTrinoPluginTest extends Specification {
         jwtProps.accessToken.startsWith('eyJ0eXAiOiJKV1Qi')
     }
 
+    @Tag("Starburst")
     def 'should handle Starburst connection failure gracefully when cluster is unreachable' () {
         given: 'Starburst connection parameters for non-existent cluster'
         def testUrl = "jdbc:trino://non-existent-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
@@ -202,6 +214,7 @@ class NfTrinoPluginTest extends Specification {
         thrown(Exception)
     }
 
+    @Tag("Starburst")
     def 'should construct valid Starburst JDBC URLs according to documentation' () {
         given: 'Starburst connection requirements from documentation'
         // Based on https://docs.starburst.io/clients/jdbc.html
@@ -236,6 +249,7 @@ class NfTrinoPluginTest extends Specification {
         }
     }
 
+    @Tag("Athena")
     @Requires({ 
         // Check if AWS credentials are available
         System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
@@ -288,6 +302,7 @@ class NfTrinoPluginTest extends Specification {
         sql?.close()
     }
 
+    @Tag("Athena")
     @Requires({ 
         // Check if AWS credentials are available
         System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
@@ -334,6 +349,7 @@ class NfTrinoPluginTest extends Specification {
         sql?.close()
     }
 
+    @Tag("Athena")
     @Requires({ 
         // Check if AWS credentials are available
         System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
@@ -390,6 +406,7 @@ class NfTrinoPluginTest extends Specification {
         sql?.close()
     }
 
+    @Tag("Athena")
     def 'should handle connection failure gracefully when credentials are not available'() {
         given: 'NIH SRA Athena connection parameters with invalid/missing credentials'
         def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_metadata_us_east_1@athena.us-east-1.amazonaws.com:443"
