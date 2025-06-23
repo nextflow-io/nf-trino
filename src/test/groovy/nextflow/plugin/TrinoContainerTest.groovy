@@ -26,8 +26,12 @@ import spock.lang.Timeout
 /**
  * Trino integration tests using Testcontainers
  * 
- * These tests verify that the Trino JDBC driver works correctly 
+ * These tests verify that the core Trino JDBC driver works correctly 
  * with a real Trino instance running in a container.
+ * 
+ * NOTE: This test class focuses ONLY on testing the "trino" driver
+ * and does NOT test Athena or Starburst functionality - those are
+ * tested separately in NfTrinoPluginTest.groovy
  */
 @Testcontainers
 class TrinoContainerTest extends Specification {
@@ -40,23 +44,30 @@ class TrinoContainerTest extends Specification {
         // Start the Trino container
         trino.start()
         
-        // Wait for Trino to be fully ready by checking if we can connect and run a simple query
-        def sql = Sql.newInstance(trino.getJdbcUrl(), trino.getUsername(), trino.getPassword(), "io.trino.jdbc.TrinoDriver")
-        def maxRetries = 30
-        def retryDelay = 1000 // 1 second
+        // Wait for Trino to be fully ready by checking if we can connect and run queries
+        def maxRetries = 60  // Increased retries
+        def retryDelay = 2000 // 2 seconds
         
         for (int i = 0; i < maxRetries; i++) {
             try {
+                def sql = Sql.newInstance(trino.getJdbcUrl(), trino.getUsername(), trino.getPassword(), "io.trino.jdbc.TrinoDriver")
+                
+                // Test basic connectivity
                 def result = sql.rows('SELECT 1')
                 if (result.size() == 1) {
+                    // Test that we can actually create tables (more comprehensive readiness check)
+                    sql.execute('CREATE TABLE IF NOT EXISTS memory.default.readiness_test (id bigint)')
+                    sql.execute('DROP TABLE IF EXISTS memory.default.readiness_test')
                     sql.close()
+                    println "Trino container is ready after ${i + 1} attempts"
                     break
                 }
+                sql.close()
             } catch (Exception e) {
                 if (i == maxRetries - 1) {
-                    sql?.close()
                     throw new RuntimeException("Trino container failed to become ready after ${maxRetries} attempts", e)
                 }
+                println "Waiting for Trino to be ready... attempt ${i + 1}/${maxRetries}: ${e.message}"
                 Thread.sleep(retryDelay)
             }
         }
@@ -183,22 +194,22 @@ class TrinoContainerTest extends Specification {
     }
 
     @Timeout(30)
-    def 'should verify Trino driver registration'() {
+    def 'should verify Trino driver registration and connectivity'() {
         given: 'Initialize the NfTrinoPlugin to register drivers'
         def wrapper = Mock(org.pf4j.PluginWrapper)
         new NfTrinoPlugin(wrapper)
 
-        when: 'Check if Trino driver is registered'
-        def driverClass = nextflow.sql.config.DriverRegistry.DEFAULT.getDrivers()["trino"]
+        when: 'Check if Trino driver is registered (not Athena or Starburst)'
+        def trinoDriverClass = nextflow.sql.config.DriverRegistry.DEFAULT.getDrivers()["trino"]
 
         then: 'Should have the correct Trino driver class'
-        driverClass == "io.trino.jdbc.TrinoDriver"
+        trinoDriverClass == "io.trino.jdbc.TrinoDriver"
 
-        when: 'Connect using the registered driver'
-        def sql = Sql.newInstance(trino.getJdbcUrl(), trino.getUsername(), trino.getPassword(), driverClass)
+        when: 'Connect using the registered Trino driver with container'
+        def sql = Sql.newInstance(trino.getJdbcUrl(), trino.getUsername(), trino.getPassword(), trinoDriverClass)
         def result = sql.rows('SELECT 1 as test_value')
 
-        then: 'Should successfully connect and query'
+        then: 'Should successfully connect and query using Trino driver'
         result.size() == 1
         result[0].test_value == 1
 
