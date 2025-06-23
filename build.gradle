@@ -35,6 +35,11 @@ dependencies {
     // AWS Athena JDBC driver - downloaded via task below
     // Reference https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html
     api files('src/dist/lib/AthenaJDBC42-2.2.1.1001.jar')
+    
+    // Testcontainers for integration testing
+    testImplementation("org.testcontainers:testcontainers:1.20.0")
+    testImplementation("org.testcontainers:trino:1.20.0")
+    testImplementation("org.testcontainers:spock:1.20.0")
 }
 
 /**
