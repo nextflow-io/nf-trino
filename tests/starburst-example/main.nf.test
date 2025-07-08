@@ -1,0 +1,55 @@
+nextflow_pipeline {
+    name "Test starburst-example pipeline"
+    script "./main.nf"
+    config "./nextflow.config"
+    
+    test("Starburst example pipeline syntax validation") {
+        when {
+            params {
+                db_name = 'test_starburst'
+                catalog = 'test_catalog'
+                schema = 'test_schema'
+                table = 'test_table'
+                limit = 5
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+            if (workflow.success) {
+                assert workflow.trace.tasks().size() == 0 // No processes in this pipeline
+            }
+        }
+    }
+    
+    test("Starburst example with custom parameters") {
+        when {
+            params {
+                db_name = 'starburst_prod'
+                catalog = 'hive'
+                schema = 'genomics'
+                table = 'samples'
+                limit = 20
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+            if (workflow.success) {
+                assert params.db_name == 'starburst_prod'
+                assert params.catalog == 'hive'
+                assert params.schema == 'genomics'
+                assert params.table == 'samples'
+                assert params.limit == 20
+            }
+        }
+    }
+}

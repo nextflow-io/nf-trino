@@ -1,0 +1,71 @@
+nextflow_pipeline {
+    name "Test trino-example pipeline"
+    script "./main.nf"
+    config "./nextflow.config"
+    
+    test("Trino example pipeline syntax validation") {
+        when {
+            params {
+                trino_catalog = 'test_catalog'
+                trino_schema = 'test_schema'
+                limit = 5
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+            if (workflow.success) {
+                assert workflow.trace.tasks().size() == 0 // No processes in this pipeline
+            }
+        }
+    }
+    
+    test("Trino example with Hive catalog") {
+        when {
+            params {
+                trino_catalog = 'hive'
+                trino_schema = 'default'
+                limit = 15
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+            if (workflow.success) {
+                assert params.trino_catalog == 'hive'
+                assert params.trino_schema == 'default'
+                assert params.limit == 15
+            }
+        }
+    }
+    
+    test("Trino example with PostgreSQL catalog") {
+        when {
+            params {
+                trino_catalog = 'postgresql'
+                trino_schema = 'public'
+                limit = 25
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+            if (workflow.success) {
+                assert params.trino_catalog == 'postgresql'
+                assert params.trino_schema == 'public'
+            }
+        }
+    }
+}

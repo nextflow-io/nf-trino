@@ -19,8 +19,22 @@ install:
 # Publish the plugin
 release:
 	./gradlew releasePlugin
+
+# Test example pipelines
+test-examples: install
+	cd tests && nf-test test */main.nf.test
+
+# Test specific example pipeline
+test-example: install
+	@if [ -z "$(EXAMPLE)" ]; then \
+		echo "Usage: make test-example EXAMPLE=<example-name>"; \
+		echo "Available examples: test-sql-extension, trino-example, athena-example, starburst-example, simple-athena-test, simple-sra-query, nih-sra-athena"; \
+		exit 1; \
+	fi
+	cd tests/$(EXAMPLE) && nf-test test main.nf.test
+
 # Run specific example pipeline
-run-example:
+run-example: install
 	@if [ -z "$(EXAMPLE)" ]; then \
 		echo "Usage: make run-example EXAMPLE=<example-name> [ARGS='--param value']"; \
 		echo "Available examples: test-sql-extension, trino-example, athena-example, starburst-example, simple-athena-test, simple-sra-query, nih-sra-athena"; \

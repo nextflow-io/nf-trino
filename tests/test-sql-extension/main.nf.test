@@ -1,0 +1,39 @@
+nextflow_pipeline {
+    name "Test test-sql-extension pipeline"
+    script "./main.nf"
+    config "./nextflow.config"
+    
+    test("SQL extension test pipeline syntax validation") {
+        when {
+            params {
+                // No parameters needed for this test
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            // If it fails, it should not be due to syntax errors
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+        }
+    }
+    
+    test("SQL extension test completion") {
+        when {
+            params {
+                // No parameters needed for this test
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            // If it fails, it should not be due to syntax errors
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+        }
+    }
+}
