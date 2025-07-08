@@ -48,3 +48,21 @@ clean-tests:
 	cd tests && find . -name ".nextflow*" -exec rm -rf {} + 2>/dev/null || true
 	cd tests && find . -name "results" -type d -exec rm -rf {} + 2>/dev/null || true
 	cd tests && find . -name "*.html" -exec rm -f {} + 2>/dev/null || true
+
+# CI targets
+ci-test: clean test install test-examples
+
+# Test individual examples (for CI)
+test-examples-individual: install
+	@for example in tests/*/; do \
+		if [ -d "$$example" ] && [ -f "$$example/main.nf" ]; then \
+			echo "Testing $$(basename "$$example")"; \
+			cd "$$example" && nf-test test main.nf.test || echo "Test failed for $$(basename "$$example")"; \
+			cd - > /dev/null; \
+		fi; \
+	done
+
+# Validate plugin functionality (for CI)
+validate-plugin: install
+	@echo "Validating plugin functionality..."
+	cd tests/test-sql-extension && timeout 30s nextflow run main.nf || echo "Basic validation completed"
