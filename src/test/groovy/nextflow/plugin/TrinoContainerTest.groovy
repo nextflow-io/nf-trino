@@ -17,11 +17,14 @@
 package nextflow.plugin
 
 import groovy.sql.Sql
+import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.TrinoContainer
 import org.testcontainers.spock.Testcontainers
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
+import spock.lang.Tag
+import spock.lang.Requires
 
 /**
  * Trino integration tests using Testcontainers
@@ -33,6 +36,8 @@ import spock.lang.Timeout
  * and does NOT test Athena or Starburst functionality - those are
  * tested separately in NfTrinoPluginTest.groovy
  */
+@Tag("Integration")
+@Requires({ DockerClientFactory.instance().isDockerAvailable() })
 @Testcontainers
 class TrinoContainerTest extends Specification {
 
