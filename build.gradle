@@ -1,5 +1,5 @@
 plugins {
-    id 'io.nextflow.nextflow-plugin' version '0.0.1-alpha4'
+    id 'io.nextflow.nextflow-plugin' version '1.0.0-beta.15'
     id 'de.undercouch.download' version '5.4.0'
 }
 
@@ -8,20 +8,15 @@ version = '0.1.0'
 
 
 nextflowPlugin {
-    nextflowVersion = '24.10.0'
+    nextflowVersion = '25.10.0'
 
     provider = 'nextflow'
     className = 'nextflow.plugin.NfTrinoPlugin'
+    generateSpec = false
     extensionPoints = [
         'nextflow.sql.ChannelSqlExtension'
     ]
 
-    publishing {
-        registry {
-            url = 'https://nf-plugins-registry.dev-tower.net/api'
-            authToken = project.findProperty('pluginRegistry.accessToken')
-        }
-    }
 }
 
 dependencies {
@@ -35,11 +30,19 @@ dependencies {
     // AWS Athena JDBC driver - downloaded via task below
     // Reference https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html
     api files('src/dist/lib/AthenaJDBC42-2.2.1.1001.jar')
+    api("com.amazonaws:aws-java-sdk-core:1.12.797")
     
     // Testcontainers for integration testing
     testImplementation("org.testcontainers:testcontainers:1.20.0")
     testImplementation("org.testcontainers:trino:1.20.0")
     testImplementation("org.testcontainers:spock:1.20.0")
+}
+
+test {
+    useJUnitPlatform {
+        if (!project.hasProperty('integration'))
+            excludeTags 'Integration'
+    }
 }
 
 /**
