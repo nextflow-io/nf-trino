@@ -13,6 +13,6 @@ update_when: Plugin entry points, extension points, or provider registration cha
 - [`../../build.gradle`](../../build.gradle) owns the plugin class, public
   extension points, dependencies, and packaged Athena driver.
 - Trino and Starburst intentionally share `io.trino.jdbc.TrinoDriver`; Athena
-  uses the Simba driver.
+  uses `com.amazon.athena.jdbc.AthenaDriver`.
 - Keep provider registration, dependencies, the matching guide under
   [`../../docs/`](../../docs/), and tests aligned.

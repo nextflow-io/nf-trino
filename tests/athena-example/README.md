@@ -1,3 +1,11 @@
+---
+purpose: Demonstrate a basic AWS Athena query pipeline.
+applies_to: AWS Athena example users
+entrypoint: main.nf
+verification: nf-test test main.nf.test
+update_when: Athena configuration or example behavior changes
+---
+
 # Athena Example Pipeline
 
 This example demonstrates basic AWS Athena integration using the nf-trino plugin.
@@ -24,9 +32,7 @@ Edit the `nextflow.config` file to set your AWS credentials and S3 bucket:
 sql {
     db {
         awsathena {
-            url = 'jdbc:awsathena://AwsRegion=us-east-1;S3OutputLocation=s3://your-athena-results-bucket/query-results/'
-            user = 'YOUR_AWS_ACCESS_KEY'
-            password = 'YOUR_AWS_SECRET_KEY'
+            url = 'jdbc:athena://Region=us-east-1;OutputLocation=s3://your-athena-results-bucket/query-results/;CredentialsProvider=DefaultChain;'
         }
     }
 }

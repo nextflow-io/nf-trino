@@ -1,3 +1,11 @@
+---
+purpose: Track user-visible changes and release history.
+applies_to: Plugin releases
+entrypoint: Unreleased
+verification: Review Unreleased entries before release
+update_when: User-visible behavior changes
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -19,5 +27,6 @@ Semantic Versioning.
 ### Changed
 
 - Continuous integration runs deterministic unit tests by default.
+- Upgraded the Amazon Athena JDBC driver from Simba 2.2.1 to AWS 3.8.0.
 
 [Unreleased]: https://github.com/nextflow-io/nf-trino/commits/main

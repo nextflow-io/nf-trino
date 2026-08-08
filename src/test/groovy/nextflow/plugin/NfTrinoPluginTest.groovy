@@ -39,7 +39,9 @@ class NfTrinoPluginTest extends Specification {
         
         then:
         DriverRegistry.DEFAULT.getDrivers().containsKey("awsathena")
-        DriverRegistry.DEFAULT.getDrivers()["awsathena"] == "com.simba.athena.jdbc.Driver"
+        DriverRegistry.DEFAULT.getDrivers()["awsathena"] == "com.amazon.athena.jdbc.AthenaDriver"
+        Class.forName(DriverRegistry.DEFAULT.getDrivers()["awsathena"])
+        java.sql.DriverManager.getDriver("jdbc:athena://").class.name == "com.amazon.athena.jdbc.AthenaDriver"
     }
 
     @Tag("Trino")
@@ -90,7 +92,7 @@ class NfTrinoPluginTest extends Specification {
         drivers["trino"] == drivers["starburst"]
         
         and: 'Athena should use its own driver class'
-        drivers["awsathena"] == "com.simba.athena.jdbc.Driver"
+        drivers["awsathena"] == "com.amazon.athena.jdbc.AthenaDriver"
     }
 
     @Tag("Starburst")
@@ -256,15 +258,15 @@ class NfTrinoPluginTest extends Specification {
     })
     def 'should connect to NIH SRA Athena instance and query metadata'() {
         given: 'NIH SRA Athena connection parameters'
-        def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_metadata_us_east_1@athena.us-east-1.amazonaws.com:443"
-        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')}"
+        def workgroupUrl = "jdbc:athena://Catalog=AwsDataCatalog;Database=sra_metadata_us_east_1;Region=us-east-1;" +
+            "WorkGroup=primary;OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')};CredentialsProvider=DefaultChain;"
         
         and: 'Athena driver is registered'
         def wrapper = Mock(PluginWrapper)
         new NfTrinoPlugin(wrapper)
         
         when: 'Connecting to NIH SRA Athena'
-        def sql = Sql.newInstance(workgroupUrl, null, null, "com.simba.athena.jdbc.Driver")
+        def sql = Sql.newInstance(workgroupUrl, null, null, "com.amazon.athena.jdbc.AthenaDriver")
         
         then: 'Connection should be established'
         sql != null
@@ -308,15 +310,15 @@ class NfTrinoPluginTest extends Specification {
     })
     def 'should query NIH SRA SARS-CoV-2 specific dataset'() {
         given: 'NIH SRA SARS-CoV-2 Athena connection parameters'
-        def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_sars_cov_2_us_east_1@athena.us-east-1.amazonaws.com:443"
-        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')}"
+        def workgroupUrl = "jdbc:athena://Catalog=AwsDataCatalog;Database=sra_sars_cov_2_us_east_1;Region=us-east-1;" +
+            "WorkGroup=primary;OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')};CredentialsProvider=DefaultChain;"
         
         and: 'Athena driver is registered'
         def wrapper = Mock(PluginWrapper)
         new NfTrinoPlugin(wrapper)
         
         when: 'Connecting to NIH SRA SARS-CoV-2 Athena'
-        def sql = Sql.newInstance(workgroupUrl, null, null, "com.simba.athena.jdbc.Driver")
+        def sql = Sql.newInstance(workgroupUrl, null, null, "com.amazon.athena.jdbc.AthenaDriver")
         
         then: 'Connection should be established'
         sql != null
@@ -354,15 +356,15 @@ class NfTrinoPluginTest extends Specification {
     })
     def 'should query NIH SRA taxonomy analysis data'() {
         given: 'NIH SRA Athena connection parameters for taxonomy data'
-        def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_metadata_us_east_1@athena.us-east-1.amazonaws.com:443"
-        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')}"
+        def workgroupUrl = "jdbc:athena://Catalog=AwsDataCatalog;Database=sra_metadata_us_east_1;Region=us-east-1;" +
+            "WorkGroup=primary;OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')};CredentialsProvider=DefaultChain;"
         
         and: 'Athena driver is registered'
         def wrapper = Mock(PluginWrapper)
         new NfTrinoPlugin(wrapper)
         
         when: 'Connecting to NIH SRA Athena'
-        def sql = Sql.newInstance(workgroupUrl, null, null, "com.simba.athena.jdbc.Driver")
+        def sql = Sql.newInstance(workgroupUrl, null, null, "com.amazon.athena.jdbc.AthenaDriver")
         
         then: 'Connection should be established'
         sql != null
@@ -407,15 +409,15 @@ class NfTrinoPluginTest extends Specification {
     @Tag("Integration")
     def 'should handle connection failure gracefully when credentials are not available'() {
         given: 'NIH SRA Athena connection parameters with invalid/missing credentials'
-        def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_metadata_us_east_1@athena.us-east-1.amazonaws.com:443"
-        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=s3://test-bucket/query-results/"
+        def workgroupUrl = "jdbc:athena://Catalog=AwsDataCatalog;Database=sra_metadata_us_east_1;Region=us-east-1;" +
+            "WorkGroup=primary;OutputLocation=s3://test-bucket/query-results/;User=invalid;Password=invalid;"
         
         and: 'Athena driver is registered'
         def wrapper = Mock(PluginWrapper)
         new NfTrinoPlugin(wrapper)
         
         when: 'Attempting to connect without proper credentials'
-        def sql = Sql.newInstance(workgroupUrl, null, null, "com.simba.athena.jdbc.Driver")
+        def sql = Sql.newInstance(workgroupUrl, null, null, "com.amazon.athena.jdbc.AthenaDriver")
         sql.rows("SELECT 1")
         
         then: 'Should throw an appropriate exception'

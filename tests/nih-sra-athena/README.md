@@ -1,3 +1,11 @@
+---
+purpose: Demonstrate NIH SRA queries through AWS Athena.
+applies_to: NIH SRA Athena example users
+entrypoint: main.nf
+verification: nf-test test main.nf.test
+update_when: NIH SRA queries or Athena configuration change
+---
+
 # NIH SRA Athena Pipeline
 
 This comprehensive example demonstrates advanced NIH SRA Athena querying with multiple data sources and result export.
@@ -28,9 +36,7 @@ Edit the `nextflow.config` file to set your AWS credentials:
 sql {
     db {
         awsathena {
-            url = 'jdbc:awsathena://AwsRegion=us-east-1;S3OutputLocation=s3://your-athena-results-bucket/query-results/'
-            user = 'YOUR_AWS_ACCESS_KEY'
-            password = 'YOUR_AWS_SECRET_KEY'
+            url = 'jdbc:athena://Region=us-east-1;OutputLocation=s3://your-athena-results-bucket/query-results/;CredentialsProvider=DefaultChain;'
         }
     }
 }
