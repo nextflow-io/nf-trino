@@ -1,3 +1,11 @@
+---
+purpose: Explain the runnable Nextflow and nf-test fixtures.
+applies_to: Plugin examples and integration validation
+entrypoint: tests
+verification: make test-example EXAMPLE=test-sql-extension
+update_when: Fixture commands or supported providers change
+---
+
 # nf-trino Plugin Examples
 
 This directory contains examples demonstrating how to use the nf-trino plugin with Nextflow. Each example is organized as a self-contained pipeline with its own directory, documentation, and tests.
@@ -149,7 +157,7 @@ For Athena, configure your connection:
 sql {
     db {
         awsathena {
-            url = 'jdbc:awsathena://AwsRegion=us-east-1;S3OutputLocation=s3://your-bucket/results/'
+            url = 'jdbc:athena://Region=us-east-1;OutputLocation=s3://your-bucket/results/;CredentialsProvider=DefaultChain;'
             driver = 'awsathena'
             // AWS credentials will be picked up automatically from:
             // - Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
@@ -200,7 +208,7 @@ The nf-trino plugin registers the following JDBC drivers:
 
 - **trino**: `io.trino.jdbc.TrinoDriver` - For Trino clusters
 - **starburst**: `io.trino.jdbc.TrinoDriver` - For Starburst Galaxy and Starburst Enterprise
-- **awsathena**: `com.simba.athena.jdbc.Driver` - For AWS Athena
+- **awsathena**: `com.amazon.athena.jdbc.AthenaDriver` - For AWS Athena
 
 ## Troubleshooting
 

@@ -1,3 +1,11 @@
+---
+purpose: Document AWS Athena configuration for nf-trino.
+applies_to: AWS Athena users
+entrypoint: AWS Athena integration
+verification: ./gradlew test --tests "*should register AWS Athena driver"
+update_when: Athena driver or connection parameters change
+---
+
 # AWS Athena integration
 
 ## Pre-requisites
@@ -27,9 +35,7 @@ plugins {
 sql {
     db {
         awsathena {
-            url = 'jdbc:awsathena://AwsRegion=<YOUR_AWS_REGION>;S3OutputLocation=<YOUR_S3_BUCKET>'
-            user = '<YOUR_AWS_ACCESS_KEY>'
-            password = '<YOUR_AWS_SECRET_KEY>'
+            url = 'jdbc:athena://Region=<YOUR_AWS_REGION>;OutputLocation=<YOUR_S3_BUCKET>;CredentialsProvider=DefaultChain;'
         }
     }
 }
