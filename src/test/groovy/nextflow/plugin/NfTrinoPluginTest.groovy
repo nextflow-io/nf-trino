@@ -250,15 +250,14 @@ class NfTrinoPluginTest extends Specification {
     }
 
     @Tag("Athena")
+    @Tag("Integration")
     @Requires({ 
-        // Check if AWS credentials are available
-        System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
-        new File(System.getProperty('user.home') + '/.aws/credentials').exists()
+        System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')
     })
     def 'should connect to NIH SRA Athena instance and query metadata'() {
         given: 'NIH SRA Athena connection parameters'
         def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_metadata_us_east_1@athena.us-east-1.amazonaws.com:443"
-        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=s3://your-athena-results-bucket/query-results/"
+        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')}"
         
         and: 'Athena driver is registered'
         def wrapper = Mock(PluginWrapper)
@@ -303,15 +302,14 @@ class NfTrinoPluginTest extends Specification {
     }
 
     @Tag("Athena")
+    @Tag("Integration")
     @Requires({ 
-        // Check if AWS credentials are available
-        System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
-        new File(System.getProperty('user.home') + '/.aws/credentials').exists()
+        System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')
     })
     def 'should query NIH SRA SARS-CoV-2 specific dataset'() {
         given: 'NIH SRA SARS-CoV-2 Athena connection parameters'
         def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_sars_cov_2_us_east_1@athena.us-east-1.amazonaws.com:443"
-        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=s3://your-athena-results-bucket/query-results/"
+        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')}"
         
         and: 'Athena driver is registered'
         def wrapper = Mock(PluginWrapper)
@@ -350,15 +348,14 @@ class NfTrinoPluginTest extends Specification {
     }
 
     @Tag("Athena")
+    @Tag("Integration")
     @Requires({ 
-        // Check if AWS credentials are available
-        System.getenv('AWS_ACCESS_KEY_ID') || System.getenv('AWS_PROFILE') || 
-        new File(System.getProperty('user.home') + '/.aws/credentials').exists()
+        System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')
     })
     def 'should query NIH SRA taxonomy analysis data'() {
         given: 'NIH SRA Athena connection parameters for taxonomy data'
         def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_metadata_us_east_1@athena.us-east-1.amazonaws.com:443"
-        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=s3://your-athena-results-bucket/query-results/"
+        def workgroupUrl = athenaUrl + ";Workgroup=primary;S3OutputLocation=${System.getenv('ATHENA_TEST_S3_OUTPUT_LOCATION')}"
         
         and: 'Athena driver is registered'
         def wrapper = Mock(PluginWrapper)
@@ -407,6 +404,7 @@ class NfTrinoPluginTest extends Specification {
     }
 
     @Tag("Athena")
+    @Tag("Integration")
     def 'should handle connection failure gracefully when credentials are not available'() {
         given: 'NIH SRA Athena connection parameters with invalid/missing credentials'
         def athenaUrl = "jdbc:awsathena://AwsDataCatalog:sra_metadata_us_east_1@athena.us-east-1.amazonaws.com:443"
