@@ -12,6 +12,10 @@ clean:
 test:
 	./gradlew test
 
+# Run the installed plugin's public fromQuery extension in a clean Nextflow home
+smoke:
+	@tmp=$$(mktemp -d); trap 'rm -rf "$$tmp"' EXIT; NXF_HOME="$$tmp" ./gradlew install && NXF_HOME="$$tmp" NXF_VER=25.10.0 nextflow run examples/test-sql-extension.nf -plugins nf-trino@0.1.0
+
 # Install the plugin into local nextflow plugins dir
 install:
 	./gradlew install
