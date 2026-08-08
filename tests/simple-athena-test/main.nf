@@ -10,7 +10,7 @@
  * - S3 bucket for query results in us-east-1 region
  * 
  * Usage:
- *   nextflow run simple-athena-test.nf --s3_bucket s3://your-bucket/results/
+ *   nextflow run main.nf --s3_bucket s3://your-bucket/results/
  */
 
 nextflow.enable.dsl=2

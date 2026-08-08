@@ -1,11 +1,12 @@
 # nf-trino Plugin Examples
 
-This directory contains examples demonstrating how to use the nf-trino plugin with Nextflow.
+This directory contains examples demonstrating how to use the nf-trino plugin with Nextflow. Each example is organized as a self-contained pipeline with its own directory, documentation, and tests.
 
 ## Prerequisites
 
 1. **Install the plugin**: The plugin should be installed automatically when you run the examples with the `-plugins` flag
 2. **Database access**: For real database connections, you'll need appropriate credentials and network access
+3. **nf-test**: For running validation tests (optional but recommended)
 
 ## Quick Test
 
@@ -13,44 +14,112 @@ To verify the plugin is working correctly:
 
 ```bash
 # Test basic plugin functionality
-nextflow run test-sql-extension.nf -plugins nf-trino@0.1.0
+cd test-sql-extension
+nextflow run main.nf -plugins nf-trino@0.1.0
 ```
 
-## Examples
+## Example Pipelines
 
-### 1. Trino Connection Example
+Each example pipeline is contained in its own directory with:
+- `main.nf` - The main pipeline script
+- `nextflow.config` - Configuration file with database settings
+- `README.md` - Detailed documentation and usage instructions
+- `main.nf.test` - nf-test validation tests
 
-**File**: `trino-example.nf`
+### 1. Basic Database Connectivity
 
-Demonstrates connecting to a Trino cluster and running basic queries.
+#### [`test-sql-extension/`](test-sql-extension/)
+Tests that the nf-trino plugin SQL extension loads properly without requiring database connections.
 
 ```bash
-# Configure your Trino connection in trino-config.config first
-nextflow run trino-example.nf -c trino-config.config -plugins nf-trino@0.1.0
+cd test-sql-extension
+nextflow run main.nf
 ```
 
-### 2. AWS Athena Examples
+### 2. Trino Cluster Integration
 
-**Files**: 
-- `athena-example.nf` - Basic Athena connection
-- `nih-sra-athena.nf` - NIH SRA public dataset queries
-- `simple-athena-test.nf` - Connection testing
-- `simple-sra-query.nf` - Simple SRA queries
-
-For AWS Athena examples, you need:
-- AWS credentials configured (via AWS CLI, environment variables, or IAM roles)
-- An S3 bucket for query results
-- Appropriate permissions for Athena and S3
+#### [`trino-example/`](trino-example/)
+Demonstrates connecting to a Trino cluster and running basic queries including schema and table discovery.
 
 ```bash
-# Basic Athena example
-nextflow run athena-example.nf -plugins nf-trino@0.1.0 \
-  --aws_glue_db your-database \
-  --aws_glue_db_table your-table
+cd trino-example
+# Configure your Trino connection in nextflow.config first
+nextflow run main.nf --trino_catalog hive --trino_schema default
+```
 
-# NIH SRA public data example (requires AWS credentials)
-nextflow run nih-sra-athena.nf -plugins nf-trino@0.1.0 \
-  --s3_bucket s3://your-bucket/results/
+### 3. AWS Athena Integration
+
+#### [`athena-example/`](athena-example/)
+Basic AWS Athena connection example for querying AWS Glue databases.
+
+```bash
+cd athena-example
+nextflow run main.nf --organism "Homo sapiens" --limit 20
+```
+
+#### [`simple-sra-query/`](simple-sra-query/)
+Simple NIH SRA Athena query following established patterns.
+
+```bash
+cd simple-sra-query
+nextflow run main.nf --organism "Mycobacterium tuberculosis"
+```
+
+#### [`simple-athena-test/`](simple-athena-test/)
+Connection testing for NIH SRA Athena database using Python scripts.
+
+```bash
+cd simple-athena-test
+nextflow run main.nf --s3_bucket s3://your-bucket/results/
+```
+
+#### [`nih-sra-athena/`](nih-sra-athena/)
+Comprehensive NIH SRA Athena pipeline with multiple queries and CSV export.
+
+```bash
+cd nih-sra-athena
+nextflow run main.nf --organism "Homo sapiens" --assay_type "WGS"
+```
+
+### 4. Starburst Integration
+
+#### [`starburst-example/`](starburst-example/)
+Demonstrates connecting to Starburst Galaxy or Starburst Enterprise.
+
+```bash
+cd starburst-example
+nextflow run main.nf --catalog hive --schema genomics --table samples
+```
+
+## Testing
+
+Each example includes nf-test validation tests that can be run to verify pipeline syntax and parameter handling:
+
+```bash
+# Test a specific pipeline
+cd trino-example
+nf-test test main.nf.test
+
+# Test all pipelines
+nf-test test examples/*/main.nf.test
+
+# Run with specific nf-test configuration
+nf-test test -c nf-test.config
+```
+
+### Test Profiles
+
+The examples support different testing profiles:
+
+- **ci**: For continuous integration testing (mocks database connections)
+- **local**: For local testing with actual database connections
+
+```bash
+# Run in CI mode (no real database connections)
+nf-test test -profile ci
+
+# Run in local mode (requires database access)
+nf-test test -profile local
 ```
 
 ## Configuration
