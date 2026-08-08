@@ -10,13 +10,11 @@ update_when: Contributor or release workflows change
 
 - Start with [`README.md`](README.md) for the public plugin contract and
   developer commands.
-- Route plugin registration and dependency changes through
-  [`build.gradle`](build.gradle) and
-  [`NfTrinoPlugin.groovy`](src/main/groovy/nextflow/plugin/NfTrinoPlugin.groovy).
+- Use [`src/main/AGENTS.md`](src/main/AGENTS.md) for plugin registration,
+  extension points, and dependency contracts.
 - Use [`src/test/AGENTS.md`](src/test/AGENTS.md) for Gradle test boundaries.
 - Use [`tests/AGENTS.md`](tests/AGENTS.md) for runnable Nextflow and nf-test
   fixtures.
-- Keep provider-facing changes aligned with the matching guide under
-  [`docs/`](docs/).
+- Use [`docs/AGENTS.md`](docs/AGENTS.md) for provider-facing documentation.
 - Maintain releases in [`CHANGELOG.md`](CHANGELOG.md); follow its Keep a
   Changelog and Semantic Versioning guidance.
