@@ -44,7 +44,44 @@ For local development, run `make install`, then invoke Nextflow with
 
 ## Examples
 
-The [`examples/`](examples) directory provides runnable Trino, Starburst, and
+Query Trino and stream rows into a process:
+
+```nextflow
+include { fromQuery } from 'plugin/nf-trino'
+
+workflow {
+    Channel
+        .fromQuery(
+            "SELECT sample_id, file_path FROM genomics.samples WHERE status = 'ready'",
+            db: 'trino')
+        .map { row -> tuple(row.sample_id, file(row.file_path)) }
+        .view()
+}
+```
+
+Query AWS Athena using the default credentials chain:
+
+```nextflow config
+sql {
+    db {
+        athena {
+            url = 'jdbc:athena://Region=us-east-1;OutputLocation=s3://your-bucket/results/;CredentialsProvider=DefaultChain;'
+        }
+    }
+}
+```
+
+```nextflow
+include { fromQuery } from 'plugin/nf-trino'
+
+workflow {
+    Channel
+        .fromQuery('SELECT run_accession FROM sra.metadata LIMIT 10', db: 'athena')
+        .view()
+}
+```
+
+The [`tests/`](tests) directory provides runnable Trino, Starburst, and
 Athena configurations. See the dedicated guides for
 [Trino](docs/trino.md), [Starburst](docs/starburst.md), and
 [AWS Athena](docs/aws-athena.md).

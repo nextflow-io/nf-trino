@@ -9,7 +9,8 @@ version = '0.1.0'
 nextflowPlugin {
     nextflowVersion = '25.10.0'
 
-    provider = 'nextflow'
+    provider = 'Seqera'
+    description = 'Query Trino, Starburst, and Athena from Nextflow'
     className = 'nextflow.plugin.NfTrinoPlugin'
     generateSpec = false
     extensionPoints = [
