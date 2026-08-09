@@ -24,7 +24,6 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true'
-            driver = 'starburst'
             user = 'your-username'
             password = 'your-password'
         }
@@ -41,7 +40,6 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-starburst-host:8080/catalog/schema'
-            driver = 'starburst'
             user = 'your-username'
         }
     }
@@ -57,7 +55,6 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-starburst-host:443/catalog/schema?SSL=true'
-            driver = 'starburst'
             user = 'your-username'
             password = 'your-password'  // For LDAP authentication
         }
@@ -74,7 +71,6 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-starburst-host:8080/catalog/schema'
-            driver = 'starburst'
             user = 'your-username'
             // JWT token should be passed as a connection property
             properties = [
@@ -94,7 +90,6 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-starburst-host:8080/catalog/schema?externalAuthentication=true'
-            driver = 'starburst'
             user = 'your-username'
         }
     }
@@ -108,7 +103,7 @@ sql {
 Execute a simple query against your Starburst cluster:
 
 ```nextflow
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 def sqlQuery = """
     SELECT customer_id, order_date, total_amount
@@ -125,7 +120,7 @@ Channel.fromQuery(sqlQuery, db: 'starburst').view()
 Use parameters in your queries for dynamic data selection:
 
 ```nextflow
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 params.start_date = '2023-01-01'
 params.limit = 100
@@ -145,7 +140,7 @@ Channel.fromQuery(sqlQuery, db: 'starburst').view()
 Query data from your data lake through Starburst:
 
 ```nextflow
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 def sqlQuery = """
     SELECT 
@@ -169,7 +164,7 @@ Channel.fromQuery(sqlQuery, db: 'starburst')
 Leverage Starburst's federation capabilities to query across multiple data sources:
 
 ```nextflow
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 def federatedQuery = """
     SELECT 
@@ -196,7 +191,6 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-starburst-host:8080/hive/default'
-            driver = 'starburst'
             user = 'analytics-user'
             properties = [
                 SSL: 'true',
@@ -221,7 +215,6 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-starburst-host:8080/catalog/schema'
-            driver = 'starburst'
             user = 'your-username'
             properties = [
                 encoding: 'json+zstd'  // Use Zstandard compression for better performance

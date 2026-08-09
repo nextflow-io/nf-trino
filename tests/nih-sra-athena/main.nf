@@ -17,7 +17,7 @@
 
 nextflow.enable.dsl=2
 
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 // Parameters
 params.aws_glue_db = 'sra_metadata_us_east_1'

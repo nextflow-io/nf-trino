@@ -16,7 +16,7 @@ params.trino_catalog = 'hive'
 params.trino_schema = 'default'
 params.limit = 10
 
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 workflow {
     // Simple connection test query

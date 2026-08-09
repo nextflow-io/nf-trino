@@ -9,7 +9,7 @@
 
 nextflow.enable.dsl = 2
 
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 // Parameters
 params.db_name = 'starburst'

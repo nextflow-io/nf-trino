@@ -46,7 +46,7 @@ sql {
 Execute the following Nextflow pipeline:
 
 ```nextflow
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 def sqlQuery = """
     SELECT *

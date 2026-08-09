@@ -2,6 +2,7 @@
 .gradle
 .idea
 .nextflow*
+.nxf-home-*/
 
 # Ignore Gradle build output directory
 build

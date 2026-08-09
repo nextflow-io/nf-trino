@@ -19,9 +19,8 @@ sql {
     db {
         starburst {
             url = 'jdbc:trino://your-starburst-host:443/catalog/schema?SSL=true'
-            driver = 'starburst'
             user = 'your-username'
-            password = secrets.get('STARBRUST_PASSWORD')
+            password = secrets.STARBURST_PASSWORD
         }
     }
 }
@@ -31,7 +30,7 @@ sql {
 Then query it from a workflow:
 
 ```nextflow
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 workflow {
     Channel
@@ -53,8 +52,9 @@ Athena configurations. See the dedicated guides for
 ## Development
 
 ```bash
-make test                 # deterministic unit tests
-./gradlew test -Pintegration  # Docker and credential-backed integration tests
+make test                    # deterministic unit tests
+make smoke                   # clean-install fromQuery smoke test
+./gradlew test -Pintegration # Docker and credential-backed integration tests
 make assemble
 ```
 

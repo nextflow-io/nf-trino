@@ -45,7 +45,10 @@ configurations {
 
 dependencies {
     api("org.apache.groovy:groovy-sql:4.0.26") { transitive = false }
+    // FIXME: Upgrade when https://github.com/nextflow-io/nf-sqldb/issues/33 is resolved.
     api("io.nextflow:nf-sqldb:0.7.0") { transitive = false }
+    // H2 backs the deterministic no-service smoke workflow.
+    api("com.h2database:h2:2.2.224") { transitive = false }
     
     // Trino JDBC driver from Maven Central
     // Reference https://trino.io/docs/current/client/jdbc.html

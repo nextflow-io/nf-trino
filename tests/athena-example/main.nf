@@ -11,7 +11,7 @@ params.aws_glue_db_table = 'metadata'
 params.organism = 'Mycobacterium tuberculosis'
 params.limit = 10
 
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 workflow {
     def sqlQuery = """

@@ -24,7 +24,6 @@ sql {
     db {
         trino {
             url = 'jdbc:trino://trino-coordinator.example.com:8080/catalog/schema'
-            driver = 'trino'
             user = 'your-username'
         }
     }
@@ -40,7 +39,6 @@ sql {
     db {
         trino {
             url = 'jdbc:trino://trino-coordinator.example.com:443/catalog/schema?SSL=true'
-            driver = 'trino'
             user = 'your-username'
             password = 'your-password'  // For LDAP authentication
         }
@@ -57,7 +55,6 @@ sql {
     db {
         trino {
             url = 'jdbc:trino://trino-coordinator.example.com:8080/catalog/schema'
-            driver = 'trino'
             user = 'your-username'
             // JWT token should be passed as a connection property
             properties = [
@@ -75,7 +72,7 @@ sql {
 Execute a simple query against your Trino cluster:
 
 ```nextflow
-include { fromQuery } from 'plugin/nf-sqldb'
+include { fromQuery } from 'plugin/nf-trino'
 
 def sqlQuery = """
     SELECT customer_id, order_date, total_amount
@@ -163,7 +160,6 @@ sql {
     db {
         trino {
             url = 'jdbc:trino://trino-coordinator.example.com:8080/hive/default'
-            driver = 'trino'
             user = 'analytics-user'
             properties = [
                 SSL: 'true',
