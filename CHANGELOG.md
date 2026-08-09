@@ -19,6 +19,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-09
+
 ### Added
 
 - Initial Nextflow plugin support for querying Trino, Starburst, and Amazon Athena.
@@ -29,4 +31,5 @@ Semantic Versioning.
 - Continuous integration runs deterministic unit tests by default.
 - Upgraded the Amazon Athena JDBC driver from Simba 2.2.1 to AWS 3.8.0.
 
-[Unreleased]: https://github.com/nextflow-io/nf-trino/commits/main
+[Unreleased]: https://github.com/nextflow-io/nf-trino/compare/0.1.0...HEAD
+[0.1.0]: https://github.com/nextflow-io/nf-trino/releases/tag/0.1.0
