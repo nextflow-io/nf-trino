@@ -1,121 +1,109 @@
-# Testing Guide
+---
+purpose: Define deterministic, container, and live-service testing for nf-trino
+applies_to: Plugin, JDBC driver, and example changes
+entrypoint: ./gradlew test
+verification: Run the command for each affected test tier
+update_when: Test commands, credentials, drivers, or CI coverage change
+---
+# Testing guide
 
-## Test Organization
+Use the lowest test tier that exercises the changed behavior. CI intentionally runs only the deterministic tier; Docker and credential-backed services remain explicit opt-in checks.
 
-The nf-trino plugin tests are organized using Spock tags to categorize tests by database type. This allows you to run specific test suites based on the database you're working with.
+## Test tiers
 
-## Available Test Tags
+| Tier | Command | Use when |
+| --- | --- | --- |
+| Deterministic | `./gradlew test` | Every change and every pull request |
+| Trino container | `./gradlew test -Pintegration --tests 'nextflow.plugin.TrinoContainerTest'` | Trino JDBC, SQL behavior, or shared Trino/Starburst driver changes |
+| Live Athena | `./gradlew test -Pintegration --tests 'nextflow.plugin.NfTrinoPluginTest'` | Athena driver, credentials, URL, or query changes |
+| Live Starburst | Run `tests/starburst-example/main.nf` against a temporary cluster | Starburst endpoint, TLS, or authentication changes |
 
-### `@Tag("Trino")`
-Tests related to Trino database functionality:
-- Driver registration for Trino
-- Trino-specific connection handling
-- Tests that apply to both Trino and Starburst (since they use the same driver)
+Testcontainers starts a real Trino server in Docker. It is not a mock, and it does not reproduce Athena or Starburst-specific service and authentication behavior.
 
-### `@Tag("Starburst")`
-Tests related to Starburst Galaxy and Starburst Enterprise functionality:
-- Driver registration for Starburst
-- Starburst-specific JDBC URL validation
-- Connection parameter handling for Galaxy and Enterprise
-- Authentication methods (JWT, OAuth, SSL)
-- Connection failure scenarios
+## Deterministic CI
 
-### `@Tag("Athena")`
-Tests related to AWS Athena functionality:
-- Driver registration for AWS Athena
-- NIH SRA public dataset queries
-- SARS-CoV-2 dataset access
-- Taxonomy analysis data queries
-- AWS credential handling
-
-## Running Tests
-
-### Run All Tests
 ```bash
 ./gradlew test
 ```
 
-### Run Tests by Specific Tag
-While Spock tag filtering requires additional configuration, you can run specific test methods using Gradle's test filtering:
+The default Gradle test task excludes tests tagged `Integration`. The GitHub Actions workflow runs this command with Java 17 and no Docker, AWS credentials, or database secrets.
+
+Use focused tests while developing:
 
 ```bash
-# Run a specific Starburst test
-./gradlew test --tests "*should register Starburst driver"
-
-# Run a specific Athena test  
-./gradlew test --tests "*should register AWS Athena driver"
-
-# Run a specific Trino test
-./gradlew test --tests "*should register Trino driver"
-
-# Run tests matching a pattern
-./gradlew test --tests "*Starburst*"
-./gradlew test --tests "*Athena*"
+./gradlew test --tests '*should register Trino driver'
+./gradlew test --tests '*should register Starburst driver'
+./gradlew test --tests '*should register AWS Athena driver'
 ```
 
-### Run Tests by Class
+## Trino with Testcontainers
+
+Requirements:
+
+- a running Docker-compatible container runtime
+- enough resources to start `trinodb/trino:451`
+
+Run only the container suite so enabling integration tests does not also select credential-backed Athena tests:
+
 ```bash
-# Run all plugin tests
-./gradlew test --tests "nextflow.plugin.NfTrinoPluginTest"
-
-# Run observer tests
-./gradlew test --tests "nextflow.plugin.NfTrinoObserverTest"
+./gradlew test -Pintegration --tests 'nextflow.plugin.TrinoContainerTest'
 ```
 
-## Test Categories
+This suite verifies a real JDBC connection, DDL and DML, Trino data types, catalogs and schemas, and driver-registry connectivity. Run it after changing the Trino JDBC version or code shared by Trino and Starburst.
 
-### Unit Tests
-- Driver registration validation
-- URL format validation
-- Connection parameter handling
-- Error handling scenarios
+## Live Athena
 
-### Integration Tests (Conditional)
-Some tests require external resources and are conditionally executed:
+Requirements:
 
-- **AWS Athena Tests**: Require AWS credentials (`@Requires` annotation)
-  - Environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-  - AWS profile: `AWS_PROFILE`
-  - Credentials file: `~/.aws/credentials`
+- AWS credentials available through the default AWS credential chain
+- permission to query Athena in `us-east-1`
+- permission to write query results to a dedicated S3 prefix
 
-- **Connection Tests**: Attempt real connections but handle failures gracefully
-
-## Test Results
-
-After running tests, view the detailed HTML report:
 ```bash
-open build/reports/tests/test/index.html
+export ATHENA_TEST_S3_OUTPUT_LOCATION='s3://YOUR-BUCKET/nf-trino-tests/'
+aws sts get-caller-identity
+./gradlew test -Pintegration --tests 'nextflow.plugin.NfTrinoPluginTest'
 ```
 
-The report shows:
-- Total tests run, passed, failed, and ignored
-- Test execution time
-- Detailed failure information
-- Test categorization by package and class
+The Athena integration cases query the public NIH SRA catalogs and write results to `ATHENA_TEST_S3_OUTPUT_LOCATION`. Use a disposable prefix and delete its objects after the run.
 
-## Continuous Integration
+Run this tier after changing the Athena JDBC artifact or version, JDBC properties, credential handling, region, catalog, database, workgroup, or output-location behavior. Do not put long-lived AWS keys in repository settings or workflow files.
 
-For CI environments, you may want to exclude tests that require external credentials:
+## Live Starburst
+
+There is no Starburst Testcontainers module in this repository. The Trino container suite covers the shared `io.trino.jdbc.TrinoDriver`, but only a real Starburst deployment can validate its endpoint, TLS, and authentication behavior.
+
+1. Provision a temporary Starburst Galaxy or Enterprise cluster and a least-privilege test identity.
+2. Put its JDBC configuration in an untracked Nextflow config outside the repository.
+3. Install the plugin and run the example with that config:
+
 ```bash
-# Skip tests that require AWS credentials
-./gradlew test --tests "*" --exclude-tests "*NIH*"
+make install
+nextflow run tests/starburst-example/main.nf \
+  -c /absolute/path/to/starburst-test.config \
+  --db_name starburst \
+  --catalog YOUR_CATALOG \
+  --schema YOUR_SCHEMA \
+  --table YOUR_TABLE \
+  --limit 1
 ```
 
-## Adding New Tests
+A successful run must connect, list catalogs, and return the expected test row. Destroy the temporary cluster or revoke the test identity after the run.
 
-When adding new tests, use appropriate tags:
+Run this tier after changing Starburst URL construction, TLS, username/password, JWT, OAuth, or vendor-specific connection properties. A Trino container run alone is insufficient for those changes.
 
-```groovy
-@Tag("Starburst")
-def 'should handle new Starburst feature'() {
-    // Test implementation
-}
+## nf-test examples
 
-@Tag("Athena") 
-@Requires({ /* condition for AWS access */ })
-def 'should query new Athena dataset'() {
-    // Test implementation
-}
+```bash
+make test-examples
+make test-example EXAMPLE=test-sql-extension
 ```
 
-This organization helps maintain clear separation between different database implementations and makes it easier to run targeted test suites during development. 
+These fixtures validate example parsing and parameter wiring. Athena and Starburst fixtures are not substitutes for the live-service checks above: an expected connection failure can still satisfy some fixture assertions.
+
+## Adding tests
+
+- Keep deterministic tests untagged so CI runs them.
+- Tag Docker and credential-backed tests with `@Tag("Integration")`.
+- Add database tags such as `Trino`, `Starburst`, or `Athena` for discoverability.
+- Never catch or tolerate an unexpected failure merely to make CI pass.

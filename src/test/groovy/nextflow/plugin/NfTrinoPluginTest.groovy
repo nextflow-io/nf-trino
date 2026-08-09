@@ -198,6 +198,7 @@ class NfTrinoPluginTest extends Specification {
     }
 
     @Tag("Starburst")
+    @Tag("Integration")
     def 'should handle Starburst connection failure gracefully when cluster is unreachable' () {
         given: 'Starburst connection parameters for non-existent cluster'
         def testUrl = "jdbc:trino://non-existent-cluster.galaxy.starburst.io:443/catalog/schema?SSL=true"
