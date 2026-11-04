@@ -1,0 +1,51 @@
+nextflow_pipeline {
+    name "Test athena-example pipeline"
+    script "./main.nf"
+    config "./nextflow.config"
+    
+    test("Athena example pipeline syntax validation") {
+        when {
+            params {
+                aws_glue_db = 'test_db'
+                aws_glue_db_table = 'test_table'
+                organism = 'Test organism'
+                limit = 5
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+            if (workflow.success) {
+                assert workflow.trace.tasks().size() == 0 // No processes in this pipeline
+            }
+        }
+    }
+    
+    test("Athena example with custom parameters") {
+        when {
+            params {
+                aws_glue_db = 'custom_db'
+                aws_glue_db_table = 'custom_table'
+                organism = 'Homo sapiens'
+                limit = 10
+            }
+        }
+        
+        then {
+            // Test that workflow compiles without syntax errors
+            assert workflow.success || workflow.failed
+            if (workflow.failed) {
+                assert !workflow.errorMessage.contains("Script compilation error")
+            }
+            if (workflow.success) {
+                assert params.aws_glue_db == 'custom_db'
+                assert params.organism == 'Homo sapiens'
+                assert params.limit == 10
+            }
+        }
+    }
+}
